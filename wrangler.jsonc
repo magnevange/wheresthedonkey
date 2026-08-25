@@ -1,0 +1,21 @@
+{
+  "name": "wheresthedonkey",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-01",
+
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "donkey-photos"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

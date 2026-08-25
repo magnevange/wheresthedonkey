@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Where's the Donkey</title>
+<meta name="description" content="A running photo log. Every sighting gets a number.">
+<meta name="theme-color" content="#101319" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#E7E8E3" media="(prefers-color-scheme: light)">
+<meta property="og:title" content="Where's the Donkey">
+<meta property="og:description" content="A running photo log. Every sighting gets a number.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── tokens ────────────────────────────────────────────────────── */
+:root{
+  --ink:#101319; --ink-1:#161A22; --ink-2:#1D222C; --ink-3:#2A3140;
+  --chalk:#E7E8E3; --chalk-1:#F1F2ED; --chalk-2:#DCDDD6; --chalk-3:#C6C8BF;
+  --lapis:#1D4E89; --lapis-lift:#6BA5E0;
+  --brass:#B99653;
+
+  --bg:var(--ink); --surface:var(--ink-1); --surface-2:var(--ink-2);
+  --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.20);
+  --fg:#EDEEE9; --fg-dim:#A6ACB6; --fg-faint:#7C8492;
+  --accent:var(--lapis-lift); --accent-ink:#0D1017;
+  --shadow:0 24px 70px -24px rgba(0,0,0,.85);
+  color-scheme:dark;
+
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Newsreader",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,monospace;
+
+  --ease:cubic-bezier(.22,1,.36,1);
+  --gut:clamp(1.1rem,4vw,2.75rem);
+  --radius:3px;
+}
+[data-theme="light"]{
+  --bg:var(--chalk); --surface:var(--chalk-1); --surface-2:#fff;
+  --line:rgba(16,19,25,.13); --line-strong:rgba(16,19,25,.28);
+  --fg:#171B22; --fg-dim:#4A515C; --fg-faint:#5F6774;
+  --accent:var(--lapis); --accent-ink:#fff;
+  --shadow:0 24px 60px -28px rgba(16,19,25,.45);
+  color-scheme:light;
+}
+
+/* ─── base ──────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--body); font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+html.theming, html.theming *{transition:background-color .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease) !important}
+img{display:block; max-width:100%}
+button,input,textarea{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+::selection{background:var(--accent); color:var(--accent-ink)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ─── chrome ────────────────────────────────────────────────────── */
+.bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:1rem;
+  padding:.85rem var(--gut);
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter:blur(18px) saturate(1.3);
+  -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border-bottom:1px solid var(--line);
+}
+.mark{
+  font-family:var(--display);
+  font-variation-settings:"wdth" 82,"opsz" 20;
+  font-weight:800; letter-spacing:-.035em; line-height:1;
+  font-size:clamp(1.02rem,2.6vw,1.35rem);
+  text-transform:uppercase; margin:0; white-space:nowrap;
+}
+.mark .apo{color:var(--accent)}
+.mark span{display:inline-block; opacity:0; transform:translateY(.5em); animation:settle .7s var(--ease) forwards}
+@keyframes settle{to{opacity:1;transform:none}}
+.bar .spacer{flex:1}
+
+.btn{
+  --pad:.55rem .95rem;
+  display:inline-flex; align-items:center; gap:.5rem; padding:var(--pad);
+  font-family:var(--mono); font-size:.74rem; letter-spacing:.09em; text-transform:uppercase;
+  background:transparent; color:var(--fg); border:1px solid var(--line-strong);
+  border-radius:var(--radius); cursor:pointer;
+  transition:background .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease), color .25s var(--ease);
+}
+.btn:hover{background:var(--surface-2); border-color:var(--fg-faint)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.icon{--pad:.55rem; width:2.35rem; justify-content:center}
+.btn.ghost{border-color:transparent; color:var(--fg-dim)}
+.btn.ghost:hover{color:var(--fg); background:var(--surface-2)}
+.btn[aria-pressed="true"]{border-color:var(--accent); color:var(--accent)}
+.btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── stage ─────────────────────────────────────────────────────── */
+main{padding:clamp(1rem,3vw,2rem) 0 4rem}
+.stage{
+  position:relative; margin:0 var(--gut);
+  height:clamp(300px,60vh,720px);
+  border-radius:var(--radius); overflow:hidden;
+  background:var(--surface); border:1px solid var(--line);
+  touch-action:pan-y; user-select:none; cursor:grab;
+  box-shadow:var(--shadow);
+}
+.stage.dragging{cursor:grabbing}
+.stage:fullscreen{margin:0;height:100%;border-radius:0;border:0}
+
+.bleed{position:absolute; inset:-14%; z-index:0; opacity:0; transition:opacity .9s var(--ease), background-color .9s var(--ease)}
+.bleed img{width:100%;height:100%;object-fit:cover; filter:blur(56px) saturate(1.5) brightness(.62); transform:scale(1.25)}
+[data-theme="light"] .bleed img{filter:blur(56px) saturate(1.35) brightness(1.06)}
+.bleed.on{opacity:1}
+
+.track{position:absolute; inset:0; z-index:1; display:flex; will-change:transform}
+.track.animate{transition:transform .78s var(--ease)}
+.slide{
+  flex:0 0 100%; position:relative; display:grid; place-items:center; padding:clamp(.75rem,2.2vw,2rem);
+  opacity:.22; transform:scale(.9); filter:blur(2px);
+  transition:opacity .78s var(--ease), transform .78s var(--ease), filter .78s var(--ease);
+}
+.slide[data-active]{opacity:1; transform:none; filter:none}
+.slide img{
+  max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain;
+  border-radius:2px; box-shadow:0 18px 50px -18px rgba(0,0,0,.7);
+  -webkit-user-drag:none;
+}
+
+.arrow{
+  position:absolute; top:50%; z-index:3; translate:0 -50%;
+  width:2.9rem; height:2.9rem; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--line-strong); border-radius:50%; cursor:pointer;
+  opacity:0; transition:opacity .3s var(--ease), background .25s var(--ease), transform .25s var(--ease);
+}
+.stage:hover .arrow, .arrow:focus-visible{opacity:1}
+.arrow:hover{transform:translateY(0) scale(1.07)}
+.arrow.prev{left:clamp(.5rem,1.6vw,1.1rem)} .arrow.next{right:clamp(.5rem,1.6vw,1.1rem)}
+.arrow svg{width:17px;height:17px;fill:none;stroke:var(--fg);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:none){.arrow{display:none}}
+
+.rule{position:absolute; left:0; bottom:0; height:2px; width:100%; z-index:4; background:var(--line)}
+.rule i{display:block; height:100%; width:0; background:var(--accent); transform-origin:left}
+
+/* ─── meta rail: the log line ───────────────────────────────────── */
+.rail{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:clamp(1rem,3vw,2rem);
+  margin:1.15rem var(--gut) 0; padding-bottom:1.15rem; border-bottom:1px solid var(--line);
+}
+.counter{display:flex; align-items:baseline; gap:.35rem; font-family:var(--mono); font-weight:400; line-height:.9}
+.counter .no{font-size:.8rem; color:var(--accent); transform:translateY(-.55em)}
+.odo{display:flex; font-size:clamp(2.4rem,7vw,3.9rem); letter-spacing:-.04em; color:var(--fg)}
+.digit{height:1em; overflow:hidden; width:.62em}
+.digit u{display:block; text-decoration:none; transition:transform .55s var(--ease)}
+.digit u b{display:block; height:1em; font-weight:400; text-align:center}
+.counter .of{font-family:var(--mono); font-size:.72rem; color:var(--fg-faint); letter-spacing:.08em; margin-left:.15rem}
+
+.caption{min-width:0; padding-bottom:.35rem}
+.caption p{
+  margin:0; font-family:var(--body); font-size:clamp(1rem,2.2vw,1.32rem);
+  font-style:italic; color:var(--fg); line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.caption p:empty::before{content:"No note"; color:var(--fg-faint); font-style:normal; font-family:var(--mono); font-size:.75rem; letter-spacing:.08em; text-transform:uppercase}
+.caption time{display:block; margin-top:.4rem; font-family:var(--mono); font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-faint)}
+.tools{display:flex; gap:.45rem; padding-bottom:.35rem}
+
+/* ─── film strip ────────────────────────────────────────────────── */
+.strip{
+  display:flex; gap:.6rem; margin:1.15rem 0 0; padding:0 var(--gut) .5rem;
+  overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:thin;
+  scrollbar-color:var(--line-strong) transparent;
+}
+.strip::-webkit-scrollbar{height:5px}
+.strip::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:9px}
+.thumb{
+  flex:0 0 auto; position:relative; width:clamp(58px,9vw,88px); aspect-ratio:1;
+  padding:0; border:0; background:var(--surface-2); border-radius:2px; overflow:hidden;
+  cursor:pointer; scroll-snap-align:center; opacity:.42;
+  transition:opacity .3s var(--ease), transform .3s var(--ease);
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb:hover{opacity:.8; transform:translateY(-3px)}
+.thumb[aria-current="true"]{opacity:1}
+.thumb[aria-current="true"]::after{content:""; position:absolute; inset:auto 0 0 0; height:3px; background:var(--accent)}
+
+/* ─── empty state ───────────────────────────────────────────────── */
+.empty{
+  position:absolute; inset:0; z-index:2; display:grid; place-content:center; place-items:center;
+  gap:1.15rem; text-align:center; padding:2rem;
+}
+.empty h2{
+  margin:0; font-family:var(--display); font-variation-settings:"wdth" 86,"opsz" 40;
+  font-weight:700; letter-spacing:-.03em; font-size:clamp(1.5rem,4.5vw,2.4rem); line-height:1.05;
+}
+.empty p{margin:0; max-width:34ch; color:var(--fg-dim); font-size:1.02rem}
+.empty .hoof{width:54px;height:54px;opacity:.5}
+
+/* ─── upload tray ───────────────────────────────────────────────── */
+.scrim{position:fixed; inset:0; z-index:60; background:rgba(4,6,10,.62); backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity .4s var(--ease)}
+.scrim.on{opacity:1; pointer-events:auto}
+.tray{
+  position:fixed; z-index:61; left:50%; bottom:0; translate:-50% 0;
+  width:min(680px,100%); max-height:86vh; display:flex; flex-direction:column;
+  background:var(--surface); border:1px solid var(--line); border-bottom:0;
+  border-radius:10px 10px 0 0; box-shadow:var(--shadow);
+  transform:translateY(102%); transition:transform .5s var(--ease);
+}
+.tray.on{transform:translateY(0)}
+.tray header{display:flex; align-items:center; gap:1rem; padding:1.15rem 1.35rem; border-bottom:1px solid var(--line)}
+.tray h2{margin:0; font-family:var(--display); font-variation-settings:"wdth" 88,"opsz" 22; font-weight:700; font-size:1.08rem; letter-spacing:-.02em}
+.tray .list{overflow-y:auto; padding:.5rem 1.35rem; flex:1}
+.item{display:grid; grid-template-columns:64px 1fr auto; gap:.9rem; align-items:center; padding:.85rem 0; border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item img{width:64px;height:64px;object-fit:cover;border-radius:2px;background:var(--surface-2)}
+.item input{
+  width:100%; padding:.5rem .6rem; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:var(--radius); font-family:var(--body); font-size:.95rem;
+}
+.item input::placeholder{color:var(--fg-faint); font-style:italic}
+.item .meta{font-family:var(--mono); font-size:.66rem; color:var(--fg-faint); letter-spacing:.06em; margin-top:.35rem}
+.item .bad{color:var(--accent)}
+.tray footer{display:flex; align-items:center; gap:.7rem; padding:1.1rem 1.35rem calc(1.1rem + env(safe-area-inset-bottom)); border-top:1px solid var(--line)}
+.tray footer .note{flex:1; font-family:var(--mono); font-size:.66rem; line-height:1.5; letter-spacing:.05em; color:var(--fg-faint); text-transform:uppercase}
+.bar-progress{height:2px; background:var(--line)}
+.bar-progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s linear}
+
+/* ─── drop veil ─────────────────────────────────────────────────── */
+.veil{
+  position:fixed; inset:0; z-index:80; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter:blur(10px);
+  opacity:0; pointer-events:none; transition:opacity .25s var(--ease);
+}
+.veil.on{opacity:1}
+.veil div{
+  border:1px dashed var(--accent); border-radius:6px; padding:clamp(2rem,7vw,4.5rem);
+  font-family:var(--display); font-variation-settings:"wdth" 86; font-weight:700;
+  font-size:clamp(1.15rem,4vw,2rem); letter-spacing:-.02em;
+  transform:scale(.97); transition:transform .25s var(--ease);
+}
+.veil.on div{transform:scale(1)}
+
+/* ─── toast ─────────────────────────────────────────────────────── */
+.toasts{position:fixed; left:var(--gut); bottom:1.25rem; z-index:90; display:flex; flex-direction:column; gap:.5rem}
+.toast{
+  padding:.65rem .9rem; background:var(--surface-2); color:var(--fg);
+  border:1px solid var(--line-strong); border-left:3px solid var(--accent); border-radius:var(--radius);
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; box-shadow:var(--shadow);
+  animation:toastIn .45s var(--ease);
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateY(8px);transition:.35s var(--ease)}
+
+footer.site{
+  margin:3.5rem var(--gut) 0; padding-top:1.5rem; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:.6rem 1.5rem; align-items:baseline;
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-faint);
+}
+
+@media (max-width:640px){
+  .rail{grid-template-columns:1fr auto; row-gap:.9rem}
+  .caption{grid-column:1 / -1; order:3}
+  .tools{order:2}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .bleed img{filter:blur(40px) saturate(1.3) brightness(.65)}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <h1 class="mark" id="mark"></h1>
+  <div class="spacer"></div>
+  <button class="btn icon ghost" id="play" aria-pressed="true" title="Pause slideshow (space)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg><span class="sr">Pause slideshow</span></button>
+  <button class="btn icon ghost" id="theme" title="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13.4A8.2 8.2 0 1 1 10.6 4a6.6 6.6 0 0 0 9.4 9.4Z"/></svg><span class="sr">Switch theme</span></button>
+  <button class="btn primary" id="add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add photos</button>
+</header>
+
+<main>
+  <section class="stage" id="stage" aria-roledescription="carousel" aria-label="Photo log">
+    <div class="bleed" id="bleed"><img alt="" aria-hidden="true" id="bleedImg"></div>
+    <div class="track" id="track"></div>
+
+    <div class="empty" id="empty" hidden>
+      <svg class="hoof" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+        <path d="M4 8.5 6.5 4h11L20 8.5 17 20H7L4 8.5Z"/><path d="M9.5 9v6M14.5 9v6"/>
+      </svg>
+      <h2>No sightings yet.</h2>
+      <p>Drop a photo anywhere on this page, paste one from the clipboard, or use Add photos.</p>
+      <button class="btn primary" id="addEmpty">Add the first photo</button>
+    </div>
+
+    <button class="arrow prev" id="prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="arrow next" id="next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div class="rule"><i id="ruleFill"></i></div>
+  </section>
+
+  <div class="rail">
+    <div class="counter" aria-hidden="true">
+      <span class="no">№</span>
+      <div class="odo" id="odo"></div>
+      <span class="of" id="of"></span>
+    </div>
+    <div class="caption">
+      <p id="cap"></p>
+      <time id="when"></time>
+    </div>
+    <div class="tools">
+      <button class="btn icon ghost" id="full" title="Fullscreen (F)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="sr">Fullscreen</span></button>
+      <button class="btn icon ghost" id="save" title="Download photo"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/></svg><span class="sr">Download photo</span></button>
+      <button class="btn ghost" id="del">Remove</button>
+    </div>
+  </div>
+
+  <nav class="strip" id="strip" aria-label="Jump to a photo"></nav>
+  <p class="sr" aria-live="polite" id="live"></p>
+
+  <footer class="site">
+    <span>Where's the Donkey</span>
+    <span id="storeNote"></span>
+    <span>← → to move · Space to pause · F for fullscreen</span>
+  </footer>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<section class="tray" id="tray" role="dialog" aria-modal="true" aria-labelledby="trayTitle" aria-hidden="true">
+  <header>
+    <h2 id="trayTitle">Add to the log</h2>
+    <div style="flex:1"></div>
+    <button class="btn ghost" id="trayClose">Cancel</button>
+  </header>
+  <div class="bar-progress"><i id="upFill"></i></div>
+  <div class="list" id="trayList"></div>
+  <footer>
+    <span class="note" id="trayNote"></span>
+    <button class="btn primary" id="confirm">Add to log</button>
+  </footer>
+</section>
+
+<div class="veil" id="veil"><div>Drop to log the sighting</div></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="picker" accept="image/*" multiple hidden>
+
+<script>
+(() => {
+"use strict";
+
+/* ── wordmark ─────────────────────────────────────────────────── */
+(() => {
+  const txt = "Where's the Donkey";
+  document.getElementById("mark").innerHTML = [...txt].map((ch, i) =>
+    `<span style="animation-delay:${i * 22}ms"${ch === "'" ? ' class="apo"' : ""}>${ch === " " ? "&nbsp;" : ch}</span>`
+  ).join("");
+})();
+
+/* ── theme ────────────────────────────────────────────────────── */
+const THEME_KEY = "donkey.theme";
+const setTheme = (t, animate) => {
+  if (animate) {
+    document.documentElement.classList.add("theming");
+    setTimeout(() => document.documentElement.classList.remove("theming"), 400);
+  }
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem(THEME_KEY, t);
+};
+setTheme(localStorage.getItem(THEME_KEY) ||
+  (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"), false);
+document.getElementById("theme").onclick = () =>
+  setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
+
+/* ── toast ────────────────────────────────────────────────────── */
+const toast = (msg) => {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  document.getElementById("toasts").append(el);
+  setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 400); }, 3400);
+};
+
+/* ── storage adapters ─────────────────────────────────────────── */
+const idb = {
+  db: null,
+  open() {
+    return this.db ? Promise.resolve(this.db) : new Promise((res, rej) => {
+      const r = indexedDB.open("donkey", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("photos", { keyPath: "id" });
+      r.onsuccess = () => res(this.db = r.result);
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async tx(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const t = db.transaction("photos", mode);
+      const req = fn(t.objectStore("photos"));
+      t.oncomplete = () => res(req && req.result);
+      t.onerror = () => rej(t.error);
+    });
+  }
+};
+
+const LocalStore = {
+  kind: "local",
+  async list() {
+    const rows = await idb.tx("readonly", (s) => s.getAll());
+    return (rows || []).sort((a, b) => b.createdAt - a.createdAt).map((r) => ({
+      id: r.id, url: URL.createObjectURL(r.blob), w: r.w, h: r.h,
+      color: r.color, caption: r.caption, createdAt: r.createdAt
+    }));
+  },
+  async add(p) {
+    const rec = { id: p.id, blob: p.blob, w: p.w, h: p.h, color: p.color, caption: p.caption, createdAt: p.createdAt };
+    await idb.tx("readwrite", (s) => s.put(rec));
+    return { ...rec, blob: undefined, url: URL.createObjectURL(p.blob) };
+  },
+  async remove(id) { await idb.tx("readwrite", (s) => s.delete(id)); }
+};
+
+const RemoteStore = {
+  kind: "remote",
+  key: () => localStorage.getItem("donkey.key") || "",
+  async list() {
+    const r = await fetch("/api/photos", { cache: "no-store" });
+    if (!r.ok) throw new Error("list failed");
+    return r.json();
+  },
+  async add(p) {
+    const fd = new FormData();
+    fd.append("file", p.blob, p.name);
+    fd.append("w", p.w); fd.append("h", p.h);
+    fd.append("color", p.color); fd.append("caption", p.caption || "");
+    const r = await fetch("/api/photos", { method: "POST", body: fd, headers: { "x-donkey-key": this.key() } });
+    if (!r.ok) throw new Error(await r.text().catch(() => "upload failed"));
+    return r.json();
+  },
+  async remove(id) {
+    let r = await fetch("/api/photos/" + encodeURIComponent(id), {
+      method: "DELETE", headers: { "x-donkey-key": this.key() }
+    });
+    if (r.status === 401) {
+      const k = prompt("This log is locked. Enter the admin key to remove photos.");
+      if (!k) throw new Error("cancelled");
+      localStorage.setItem("donkey.key", k);
+      r = await fetch("/api/photos/" + encodeURIComponent(id), { method: "DELETE", headers: { "x-donkey-key": k } });
+    }
+    if (!r.ok) throw new Error("Remove failed");
+  }
+};
+
+let Store = LocalStore;
+
+/* ── state ────────────────────────────────────────────────────── */
+const state = { photos: [], i: 0, playing: true, dragging: false };
+const $ = (id) => document.getElementById(id);
+const track = $("track"), strip = $("strip"), stage = $("stage");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ── render ───────────────────────────────────────────────────── */
+function renderAll() {
+  track.innerHTML = ""; strip.innerHTML = "";
+  state.photos.forEach((p, n) => {
+    const s = document.createElement("div");
+    s.className = "slide";
+    s.style.background = "transparent";
+    const img = document.createElement("img");
+    img.alt = p.caption || `Sighting ${state.photos.length - n}`;
+    img.loading = "lazy"; img.decoding = "async";
+    if (p.w && p.h) { img.width = p.w; img.height = p.h; }
+    img.dataset.src = p.url;
+    s.append(img); track.append(s);
+
+    const t = document.createElement("button");
+    t.className = "thumb"; t.type = "button";
+    t.setAttribute("aria-label", `Sighting ${state.photos.length - n}`);
+    const ti = document.createElement("img");
+    ti.src = p.url; ti.alt = ""; ti.loading = "lazy";
+    t.append(ti);
+    t.onclick = () => go(n, true);
+    strip.append(t);
+  });
+  $("empty").hidden = state.photos.length > 0;
+  armed = null; $("del").textContent = "Remove"; $("del").style.color = "";
+  ["prev", "next", "full", "save", "del"].forEach((id) => $(id).disabled = !state.photos.length);
+  go(Math.min(state.i, Math.max(0, state.photos.length - 1)), false);
+}
+
+function loadNear() {
+  [...track.children].forEach((s, n) => {
+    const img = s.querySelector("img");
+    if (Math.abs(n - state.i) <= 2 && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+  });
+}
+
+function odometer(value, total) {
+  const digits = String(value).padStart(String(Math.max(total, 1)).length, "0").split("");
+  const odo = $("odo");
+  if (odo.children.length !== digits.length) {
+    odo.innerHTML = digits.map(() =>
+      `<span class="digit"><u>${[0,1,2,3,4,5,6,7,8,9].map((d) => `<b>${d}</b>`).join("")}</u></span>`
+    ).join("");
+  }
+  digits.forEach((d, k) => {
+    odo.children[k].firstChild.style.transform = `translateY(-${Number(d)}em)`;
+  });
+  $("of").textContent = "/ " + total;
+}
+
+function paint() {
+  const total = state.photos.length;
+  const p = state.photos[state.i];
+  [...track.children].forEach((s, n) => n === state.i ? s.setAttribute("data-active", "") : s.removeAttribute("data-active"));
+  [...strip.children].forEach((t, n) => {
+    t.setAttribute("aria-current", n === state.i ? "true" : "false");
+    if (n === state.i) t.scrollIntoView({ block: "nearest", inline: "center", behavior: reduced ? "auto" : "smooth" });
+  });
+  odometer(total ? total - state.i : 0, total);
+  $("cap").textContent = p?.caption || "";
+  $("when").textContent = p ? new Date(p.createdAt).toLocaleDateString(undefined,
+    { day: "2-digit", month: "short", year: "numeric" }) : "";
+  $("live").textContent = total ? `Sighting ${total - state.i} of ${total}. ${p.caption || ""}` : "";
+
+  const bleed = $("bleed"), bimg = $("bleedImg");
+  if (p) {
+    bleed.style.backgroundColor = p.color || "transparent";
+    if (bimg.src !== p.url) bimg.src = p.url;
+    bleed.classList.add("on");
+  } else bleed.classList.remove("on");
+
+  if (p) history.replaceState(null, "", "#p=" + encodeURIComponent(p.id));
+}
+
+function go(n, animate = true) {
+  const total = state.photos.length;
+  if (!total) { track.style.transform = "translate3d(0,0,0)"; paint(); return; }
+  state.i = (n + total) % total;
+  track.classList.toggle("animate", animate && !reduced);
+  track.style.transform = `translate3d(${-state.i * 100}%,0,0)`;
+  loadNear(); paint(); resetTimer();
+}
+const next = () => go(state.i + 1);
+const prev = () => go(state.i - 1);
+
+/* ── autoplay ─────────────────────────────────────────────────── */
+const DWELL = 6000;
+let elapsed = 0, last = 0, hovering = false, trayOpen = false;
+function tick(now) {
+  const dt = last ? Math.min(now - last, 250) : 0;
+  last = now;
+  const running = state.playing && !hovering && !trayOpen && !state.dragging
+    && !document.hidden && state.photos.length > 1;
+  if (running) elapsed += dt;
+  const pct = Math.max(0, Math.min(1, elapsed / DWELL));
+  $("ruleFill").style.width = (pct * 100) + "%";
+  if (running && elapsed >= DWELL) { elapsed = 0; next(); }
+  requestAnimationFrame(tick);
+}
+function resetTimer() { elapsed = 0; }
+requestAnimationFrame(tick);
+
+function setPlaying(v) {
+  state.playing = v;
+  const b = $("play");
+  b.setAttribute("aria-pressed", String(v));
+  b.title = v ? "Pause slideshow (space)" : "Play slideshow (space)";
+  b.innerHTML = v
+    ? `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg><span class="sr">Pause slideshow</span>`
+    : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg><span class="sr">Play slideshow</span>`;
+  resetTimer();
+}
+$("play").onclick = () => setPlaying(!state.playing);
+stage.addEventListener("pointerenter", () => hovering = true);
+stage.addEventListener("pointerleave", () => { hovering = false; resetTimer(); });
+document.addEventListener("visibilitychange", resetTimer);
+
+/* ── drag / swipe ─────────────────────────────────────────────── */
+let sx = 0, dx = 0, pid = null;
+stage.addEventListener("pointerdown", (e) => {
+  if (e.target.closest("button") || !state.photos.length) return;
+  pid = e.pointerId; sx = e.clientX; dx = 0;
+  state.dragging = true; stage.classList.add("dragging");
+  track.classList.remove("animate");
+  stage.setPointerCapture(pid);
+});
+stage.addEventListener("pointermove", (e) => {
+  if (!state.dragging || e.pointerId !== pid) return;
+  dx = e.clientX - sx;
+  track.style.transform = `translate3d(calc(${-state.i * 100}% + ${dx}px),0,0)`;
+});
+const endDrag = () => {
+  if (!state.dragging) return;
+  state.dragging = false; stage.classList.remove("dragging");
+  const threshold = Math.min(110, stage.clientWidth * 0.16);
+  if (dx < -threshold) next(); else if (dx > threshold) prev(); else go(state.i);
+  dx = 0;
+};
+stage.addEventListener("pointerup", endDrag);
+stage.addEventListener("pointercancel", endDrag);
+
+let wheelLock = 0;
+stage.addEventListener("wheel", (e) => {
+  if (Math.abs(e.deltaX) < Math.abs(e.deltaY) || Date.now() < wheelLock) return;
+  e.preventDefault(); wheelLock = Date.now() + 500;
+  e.deltaX > 0 ? next() : prev();
+}, { passive: false });
+
+/* ── keys ─────────────────────────────────────────────────────── */
+addEventListener("keydown", (e) => {
+  if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key === "Escape" && $("tray").classList.contains("on")) return closeTray();
+  if (e.key === "ArrowRight") { e.preventDefault(); next(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+  else if (e.key === " ") { e.preventDefault(); setPlaying(!state.playing); }
+  else if (e.key.toLowerCase() === "f") toggleFull();
+});
+$("prev").onclick = prev;
+$("next").onclick = next;
+
+function toggleFull() {
+  if (!state.photos.length) return;
+  document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen?.().catch(() => {});
+}
+$("full").onclick = toggleFull;
+
+$("save").onclick = async () => {
+  const p = state.photos[state.i];
+  if (!p) return;
+  const a = document.createElement("a");
+  a.href = p.url; a.download = `donkey-${state.photos.length - state.i}.jpg`;
+  document.body.append(a); a.click(); a.remove();
+};
+
+/* ── remove ───────────────────────────────────────────────────── */
+let armed = null;
+$("del").onclick = async () => {
+  const p = state.photos[state.i];
+  if (!p) return;
+  if (armed !== p.id) {
+    armed = p.id;
+    $("del").textContent = "Confirm removal";
+    $("del").style.color = "var(--accent)";
+    setTimeout(() => { if (armed === p.id) { armed = null; $("del").textContent = "Remove"; $("del").style.color = ""; } }, 4000);
+    return;
+  }
+  armed = null; $("del").textContent = "Remove"; $("del").style.color = "";
+  try {
+    await Store.remove(p.id);
+    state.photos.splice(state.i, 1);
+    state.i = Math.max(0, Math.min(state.i, state.photos.length - 1));
+    renderAll();
+    toast("Removed from the log");
+  } catch (err) {
+    if (String(err.message) !== "cancelled") toast("Could not remove that photo");
+  }
+};
+
+/* ── image processing ─────────────────────────────────────────── */
+const MAX_EDGE = 2560, MAX_INPUT = 30 * 1024 * 1024;
+const outType = (() => {
+  const c = document.createElement("canvas");
+  return c.toDataURL("image/webp").startsWith("data:image/webp") ? "image/webp" : "image/jpeg";
+})();
+
+async function process(file) {
+  if (!file.type.startsWith("image/")) throw new Error("Not an image file");
+  if (file.size > MAX_INPUT) throw new Error("Larger than 30 MB");
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch { throw new Error("This browser cannot read that format. Convert HEIC to JPEG first."); }
+  const scale = Math.min(1, MAX_EDGE / Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bmp, 0, 0, w, h);
+
+  const tiny = document.createElement("canvas");
+  tiny.width = tiny.height = 8;
+  const tctx = tiny.getContext("2d", { willReadFrequently: true });
+  tctx.drawImage(bmp, 0, 0, 8, 8);
+  const d = tctx.getImageData(0, 0, 8, 8).data;
+  let r = 0, g = 0, b = 0;
+  for (let k = 0; k < d.length; k += 4) { r += d[k]; g += d[k + 1]; b += d[k + 2]; }
+  const n = d.length / 4;
+  const color = `rgb(${Math.round(r / n)} ${Math.round(g / n)} ${Math.round(b / n)})`;
+  bmp.close?.();
+
+  const blob = await new Promise((res) => c.toBlob(res, outType, 0.86));
+  if (!blob) throw new Error("Could not read that image");
+  return { blob, w, h, color };
+}
+
+/* ── upload tray ──────────────────────────────────────────────── */
+let queue = [];
+const tray = $("tray"), scrim = $("scrim");
+
+function openTray(files) {
+  queue = [...files].slice(0, 40).map((f, k) => ({ file: f, key: "q" + Date.now() + k, caption: "", ready: null, error: null }));
+  if (!queue.length) return;
+  $("trayList").innerHTML = "";
+  queue.forEach((q) => {
+    const row = document.createElement("div");
+    row.className = "item";
+    row.innerHTML = `<img alt="">
+      <div><input type="text" maxlength="140" placeholder="Add a note (optional)"><div class="meta"></div></div>
+      <button class="btn ghost" type="button" aria-label="Drop this file">×</button>`;
+    row.querySelector("input").oninput = (e) => q.caption = e.target.value;
+    row.querySelector("button").onclick = () => { queue = queue.filter((x) => x !== q); row.remove(); syncTray(); };
+    $("trayList").append(row);
+    q.row = row;
+    q.job = process(q.file).then((r) => {
+      q.ready = r;
+      row.querySelector("img").src = URL.createObjectURL(r.blob);
+      row.querySelector(".meta").textContent = `${r.w}×${r.h} · ${(r.blob.size / 1024).toFixed(0)} KB`;
+      syncTray();
+    }).catch((err) => {
+      q.error = err.message;
+      const m = row.querySelector(".meta");
+      m.textContent = err.message; m.classList.add("bad");
+      syncTray();
+    });
+  });
+  syncTray();
+  scrim.classList.add("on"); tray.classList.add("on"); tray.setAttribute("aria-hidden", "false");
+  trayOpen = true; resetTimer();
+  setTimeout(() => tray.querySelector("input")?.focus(), 420);
+}
+function syncTray() {
+  const ok = queue.filter((q) => q.ready && !q.error).length;
+  $("confirm").disabled = ok === 0;
+  $("confirm").textContent = ok ? `Add ${ok} photo${ok > 1 ? "s" : ""} to log` : "Add to log";
+  $("trayNote").textContent = Store.kind === "remote"
+    ? "Shared log. Everyone with the link sees these."
+    : "Saved on this device only. Connect storage to share.";
+}
+function closeTray() {
+  tray.classList.remove("on"); scrim.classList.remove("on");
+  tray.setAttribute("aria-hidden", "true");
+  queue = []; $("upFill").style.width = "0%";
+  trayOpen = false; resetTimer();
+}
+$("trayClose").onclick = closeTray;
+scrim.onclick = closeTray;
+
+$("confirm").onclick = async () => {
+  const items = queue.filter((q) => q.ready && !q.error);
+  if (!items.length) return;
+  $("confirm").disabled = true;
+  let done = 0, failed = 0;
+  for (const q of items) {
+    try {
+      const saved = await Store.add({
+        id: crypto.randomUUID(), blob: q.ready.blob, w: q.ready.w, h: q.ready.h,
+        color: q.ready.color, caption: q.caption.trim(), createdAt: Date.now(),
+        name: (q.file.name || "photo").replace(/\.[^.]+$/, "") + (outType === "image/webp" ? ".webp" : ".jpg")
+      });
+      state.photos.unshift(saved);
+    } catch { failed++; }
+    done++;
+    $("upFill").style.width = (done / items.length * 100) + "%";
+  }
+  state.i = 0;
+  renderAll();
+  closeTray();
+  toast(failed ? `Added ${done - failed}, ${failed} failed` : `Added ${done} photo${done > 1 ? "s" : ""}`);
+};
+
+/* ── input sources ────────────────────────────────────────────── */
+$("picker").onchange = (e) => { openTray(e.target.files); e.target.value = ""; };
+$("add").onclick = () => $("picker").click();
+$("addEmpty").onclick = () => $("picker").click();
+
+let dragDepth = 0;
+addEventListener("dragenter", (e) => {
+  if (![...e.dataTransfer.types].includes("Files")) return;
+  dragDepth++; $("veil").classList.add("on");
+});
+addEventListener("dragover", (e) => e.preventDefault());
+addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; $("veil").classList.remove("on"); } });
+addEventListener("drop", (e) => {
+  e.preventDefault(); dragDepth = 0; $("veil").classList.remove("on");
+  const files = [...e.dataTransfer.files].filter((f) => f.type.startsWith("image/"));
+  files.length ? openTray(files) : toast("That was not an image file");
+});
+addEventListener("paste", (e) => {
+  const files = [...(e.clipboardData?.files || [])].filter((f) => f.type.startsWith("image/"));
+  if (files.length) openTray(files);
+});
+
+/* ── boot ─────────────────────────────────────────────────────── */
+(async () => {
+  try {
+    const probe = await fetch("/api/photos", { cache: "no-store" });
+    if (probe.ok && (probe.headers.get("content-type") || "").includes("json")) {
+      Store = RemoteStore;
+      state.photos = await probe.json();
+    } else throw 0;
+  } catch {
+    Store = LocalStore;
+    try { state.photos = await LocalStore.list(); } catch { state.photos = []; }
+  }
+  $("storeNote").textContent = Store.kind === "remote" ? "Shared log" : "This device only";
+  renderAll();
+
+  const hash = new URLSearchParams(location.hash.slice(1)).get("p");
+  if (hash) {
+    const k = state.photos.findIndex((p) => p.id === hash);
+    if (k >= 0) go(k, false);
+  }
+  setPlaying(true);
+})();
+
+})();
+</script>
+</body>
+</html>
